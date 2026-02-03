@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { KiroClient, KiroApiError } from '../kiro-client.js';
 import { EventStreamDecoder, parseKiroEvent } from '../event-parser.js';
+import { countTokens, countMessagesTokens } from '../tokenizer.js';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs/promises';
 import path from 'path';
@@ -65,6 +66,10 @@ export function createApiRouter(state) {
     const startTime = Date.now();
     let selected = null;
     
+    // 计算输入 token
+    const inputTokens = countMessagesTokens(req.body.messages) + 
+                        (req.body.system ? countTokens(typeof req.body.system === 'string' ? req.body.system : JSON.stringify(req.body.system)) : 0);
+    
     try {
       // 选择账号
       selected = await state.accountPool.selectAccount();
@@ -83,10 +88,10 @@ export function createApiRouter(state) {
       
       if (isStream) {
         // 流式响应
-        await handleStreamResponse(res, response, toolNameMap, selected, state, startTime, req.body.model);
+        await handleStreamResponse(res, response, toolNameMap, selected, state, startTime, req.body.model, inputTokens);
       } else {
         // 非流式响应
-        await handleNonStreamResponse(res, response, toolNameMap, selected, state, startTime, req.body.model);
+        await handleNonStreamResponse(res, response, toolNameMap, selected, state, startTime, req.body.model, inputTokens);
       }
 
     } catch (error) {
@@ -96,7 +101,7 @@ export function createApiRouter(state) {
           accountId: selected.id,
           accountName: selected.name,
           model: req.body.model,
-          inputTokens: 0,
+          inputTokens: inputTokens,
           outputTokens: 0,
           durationMs: Date.now() - startTime,
           success: false,
@@ -170,7 +175,7 @@ function inferAnthropicErrorType(status) {
 /**
  * 处理流式响应 (Anthropic 格式)
  */
-async function handleStreamResponse(res, response, toolNameMap, selected, state, startTime, model) {
+async function handleStreamResponse(res, response, toolNameMap, selected, state, startTime, model, inputTokens) {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
@@ -182,12 +187,12 @@ async function handleStreamResponse(res, response, toolNameMap, selected, state,
     toolNameReverse.set(kiroName, originalName);
   }
   let outputTokens = 0;
-  let inputTokens = 0;
   let contentBlockIndex = 0;
   let thinkingBlockIndex = -1;
   let textBlockIndex = -1;
   let hasToolUse = false;
   let eventCount = 0;
+  let totalOutputText = ''; // 累计输出文本，用于计算 token
   
   // thinking 处理状态
   let thinkingBuffer = '';
@@ -217,6 +222,8 @@ async function handleStreamResponse(res, response, toolNameMap, selected, state,
   function sendTextDelta(text) {
     if (!text) return;
     
+    totalOutputText += text; // 累计文本
+    
     if (textBlockIndex === -1) {
       // 如果有 thinking 块，先结束它
       if (thinkingBlockIndex !== -1) {
@@ -244,6 +251,10 @@ async function handleStreamResponse(res, response, toolNameMap, selected, state,
   
   // 辅助函数：发送 thinking_delta
   function sendThinkingDelta(thinking) {
+    if (!thinking) return;
+    
+    totalOutputText += thinking; // 累计文本
+    
     if (thinkingBlockIndex === -1) {
       thinkingBlockIndex = contentBlockIndex++;
       res.write(`event: content_block_start\ndata: ${JSON.stringify({
@@ -423,9 +434,6 @@ async function handleStreamResponse(res, response, toolNameMap, selected, state,
             })}\n\n`);
           }
 
-        } else if (eventType === 'contextUsageEvent') {
-          const percentage = data.contextUsagePercentage || 0;
-          inputTokens = Math.round(percentage * 2000);
         }
       }
     }
@@ -468,6 +476,9 @@ async function handleStreamResponse(res, response, toolNameMap, selected, state,
 
     res.end();
 
+    // 使用 tiktoken 计算输出 token
+    outputTokens = countTokens(totalOutputText);
+
     // 记录成功
     state.accountPool.addLog({
       accountId: selected.id,
@@ -487,12 +498,11 @@ async function handleStreamResponse(res, response, toolNameMap, selected, state,
 /**
  * 处理非流式响应 (Anthropic 格式)
  */
-async function handleNonStreamResponse(res, response, toolNameMap, selected, state, startTime, model) {
+async function handleNonStreamResponse(res, response, toolNameMap, selected, state, startTime, model, inputTokens) {
   const decoder = new EventStreamDecoder();
   let textContent = '';
   let thinkingContent = '';
   const toolUses = [];
-  let inputTokens = 0;
   let outputTokens = 0;
   const toolNameReverse = new Map();
   for (const [originalName, kiroName] of toolNameMap || []) {
@@ -550,9 +560,6 @@ async function handleNonStreamResponse(res, response, toolNameMap, selected, sta
               });
             }
           }
-        } else if (eventType === 'contextUsageEvent') {
-          const percentage = data.contextUsagePercentage || 0;
-          inputTokens = Math.round(percentage * 2000);
         }
       }
     }
@@ -576,8 +583,8 @@ async function handleNonStreamResponse(res, response, toolNameMap, selected, sta
 
     content.push(...toolUses);
 
-    // 估算输出 tokens
-    outputTokens = Math.ceil((textContent.length + thinkingContent.length) / 4);
+    // 使用 tiktoken 计算输出 tokens
+    outputTokens = countTokens(textContent + thinkingContent);
 
     const messageId = 'msg_' + uuidv4().replace(/-/g, '');
     const stopReason = toolUses.length > 0 ? 'tool_use' : 'end_turn';
