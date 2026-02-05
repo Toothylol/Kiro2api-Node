@@ -60,5 +60,17 @@ export function createStatsRouter(state) {
     }
   });
 
+  // 按 API 密钥统计
+  router.get('/by-api-key', (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit) || 10;
+      const timeRange = req.query.range || '24h';
+      const data = dbManager.getStatsByApiKey(limit, timeRange);
+      res.json({ success: true, data });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
   return router;
 }

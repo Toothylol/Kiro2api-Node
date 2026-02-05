@@ -7,6 +7,7 @@ import { DatabaseManager } from './db.js';
 import { migrateFromJson } from './migrations/001_init.js';
 import { migrateAccounts } from './migrations/002_accounts.js';
 import { migrateSettings } from './migrations/003_settings.js';
+import { migrateModels } from './migrations/004_models.js';
 import { createApiRouter } from './routes/api.js';
 import { createUiRouter } from './routes/ui.js';
 import { createAdminRouter } from './routes/admin.js';
@@ -63,6 +64,12 @@ async function startServer() {
     const settingsMigrationResult = await migrateSettings(dbManager, config.dataDir);
     if (!settingsMigrationResult.skipped) {
       console.log(`✓ 设置迁移完成`);
+    }
+
+    // 数据迁移：模型数据
+    const modelMigrationResult = await migrateModels(dbManager, config.dataDir);
+    if (!modelMigrationResult.skipped) {
+      console.log(`✓ 模型数据迁移完成`);
     }
 
     // 初始化设置管理器（传入数据库管理器）

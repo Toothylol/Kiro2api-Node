@@ -17,9 +17,10 @@ export class KiroApiError extends Error {
  * 负责与 Kiro API 通信，支持流式和非流式请求
  */
 export class KiroClient {
-  constructor(config, tokenManager) {
+  constructor(config, tokenManager, dbManager) {
     this.config = config;
     this.tokenManager = tokenManager;
+    this.dbManager = dbManager;
   }
 
   sanitizeToolName(name) {
@@ -96,13 +97,20 @@ export class KiroClient {
 
   /**
    * 模型映射：Anthropic 模型名 -> Kiro 模型 ID
+   * 从数据库读取映射规则
    */
   mapModel(model) {
-    const lower = model.toLowerCase();
-    if (lower.includes('sonnet')) return 'claude-sonnet-4.5';
-    if (lower.includes('opus')) return 'claude-opus-4.5';
-    if (lower.includes('haiku')) return 'claude-haiku-4.5';
-    return null;
+    if (!this.dbManager) {
+      // 如果没有数据库管理器，使用默认映射
+      const lower = model.toLowerCase();
+      if (lower.includes('sonnet')) return 'claude-sonnet-4.5';
+      if (lower.includes('opus')) return 'claude-sonnet-4.5';
+      if (lower.includes('haiku')) return 'claude-haiku-4.5';
+      return null;
+    }
+
+    const mapping = this.dbManager.findModelMapping(model);
+    return mapping ? mapping.internalId : null;
   }
 
   /**

@@ -57,13 +57,21 @@ export class SettingsManager {
     }
   }
 
-  async addApiKey(key) {
+  async addApiKey(key, name = null) {
     if (this.settings.apiKeys.has(key)) return false;
     this.settings.apiKeys.add(key);
     if (this.db) {
-      return this.db.addApiKey(key) > 0;
+      return this.db.addApiKey(key, name) > 0;
     }
     return true;
+  }
+
+  async updateApiKeyName(key, name) {
+    if (!this.settings.apiKeys.has(key)) return false;
+    if (this.db) {
+      return this.db.updateApiKeyName(key, name);
+    }
+    return false;
   }
 
   async removeApiKey(key) {
@@ -77,5 +85,12 @@ export class SettingsManager {
 
   listApiKeys() {
     return Array.from(this.settings.apiKeys);
+  }
+
+  listApiKeysWithDetails() {
+    if (this.db) {
+      return this.db.listApiKeysWithDetails();
+    }
+    return Array.from(this.settings.apiKeys).map(key => ({ key, name: null, createdAt: null }));
   }
 }

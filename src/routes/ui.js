@@ -12,6 +12,11 @@ export function createUiRouter(state) {
     res.sendFile(path.join(__dirname, '../public/index.html'));
   });
 
+  // 兼容静态资源路径
+  router.get('/services/:file', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/services', req.params.file));
+  });
+
   // 健康检查端点
   router.get('/health', (req, res) => {
     res.json({ status: 'ok', uptime: Date.now() - state.startTime });
