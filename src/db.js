@@ -1000,7 +1000,7 @@ export class DatabaseManager {
 
     const defaultMappings = [
       ['sonnet', 'claude-sonnet-4.5', 'contains', 10, 1],
-      ['opus', 'claude-opus-4.5', 'contains', 10, 1],
+      ['opus', 'claude-sonnet-4.5', 'contains', 10, 1],
       ['haiku', 'claude-haiku-4.5', 'contains', 10, 1]
     ];
 

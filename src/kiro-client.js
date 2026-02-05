@@ -104,7 +104,7 @@ export class KiroClient {
       // 如果没有数据库管理器，使用默认映射
       const lower = model.toLowerCase();
       if (lower.includes('sonnet')) return 'claude-sonnet-4.5';
-      if (lower.includes('opus')) return 'claude-opus-4.5';
+      if (lower.includes('opus')) return 'claude-sonnet-4.5';
       if (lower.includes('haiku')) return 'claude-haiku-4.5';
       return null;
     }
