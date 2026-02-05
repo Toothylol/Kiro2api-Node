@@ -753,6 +753,21 @@
             }
         }
 
+        function formatTimeLabel(timeStr) {
+            // 格式化时间标签
+            // 24小时格式: "2026-02-04 10:00:00" -> "10:00"
+            // 7天格式: "2026-02-04" -> "02-04"
+            if (timeStr.includes(':')) {
+                // 24小时格式，提取小时
+                const hour = timeStr.split(' ')[1].split(':')[0];
+                return `${parseInt(hour)}:00`;
+            } else {
+                // 7天格式，提取月-日
+                const parts = timeStr.split('-');
+                return `${parts[1]}-${parts[2]}`;
+            }
+        }
+
         function renderModelChart(data) {
             const ctx = document.getElementById('modelChart');
             if (!ctx) return;
@@ -774,6 +789,9 @@
             // 获取所有时间点
             const hours = [...new Set(data.map(d => d.hour))].sort();
             
+            // 格式化时间标签
+            const formattedLabels = hours.map(h => formatTimeLabel(h));
+            
             // 生成数据集
             const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
             const datasets = Object.keys(modelMap).map((model, idx) => {
@@ -794,7 +812,7 @@
 
             chartInstances.modelChart = new Chart(ctx, {
                 type: 'line',
-                data: { labels: hours, datasets },
+                data: { labels: formattedLabels, datasets },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
@@ -861,13 +879,14 @@
             }
 
             const hours = data.map(d => d.hour);
+            const formattedLabels = hours.map(h => formatTimeLabel(h));
             const inputTokens = data.map(d => d.inputTokens || 0);
             const outputTokens = data.map(d => d.outputTokens || 0);
 
             chartInstances.tokenTrendsChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: hours,
+                    labels: formattedLabels,
                     datasets: [
                         {
                             label: '输入 Tokens',

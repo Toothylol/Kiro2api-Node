@@ -223,21 +223,21 @@ export class DatabaseManager {
 
     switch (timeRange) {
       case '24h':
-        timeCondition = "datetime(timestamp) >= datetime('now', '-1 day')";
+        timeCondition = "datetime(timestamp, 'localtime') >= datetime('now', 'localtime', '-1 day')";
         timeFormat = '%Y-%m-%d %H:00:00'; // 按小时
         break;
       case '7d':
-        timeCondition = "datetime(timestamp) >= datetime('now', '-7 days')";
+        timeCondition = "datetime(timestamp, 'localtime') >= datetime('now', 'localtime', '-7 days')";
         timeFormat = '%Y-%m-%d'; // 按天
         break;
       default:
-        timeCondition = "datetime(timestamp) >= datetime('now', '-1 day')";
+        timeCondition = "datetime(timestamp, 'localtime') >= datetime('now', 'localtime', '-1 day')";
         timeFormat = '%Y-%m-%d %H:00:00';
     }
 
     const stmt = this.db.prepare(`
       SELECT 
-        strftime('${timeFormat}', timestamp) as hour,
+        strftime('${timeFormat}', timestamp, 'localtime') as hour,
         model,
         COUNT(*) as count,
         SUM(input_tokens) as inputTokens,
@@ -359,21 +359,21 @@ export class DatabaseManager {
 
     switch (timeRange) {
       case '24h':
-        timeCondition = "datetime(timestamp) >= datetime('now', '-1 day')";
+        timeCondition = "datetime(timestamp, 'localtime') >= datetime('now', 'localtime', '-1 day')";
         timeFormat = '%Y-%m-%d %H:00:00'; // 按小时
         break;
       case '7d':
-        timeCondition = "datetime(timestamp) >= datetime('now', '-7 days')";
+        timeCondition = "datetime(timestamp, 'localtime') >= datetime('now', 'localtime', '-7 days')";
         timeFormat = '%Y-%m-%d'; // 按天
         break;
       default:
-        timeCondition = "datetime(timestamp) >= datetime('now', '-1 day')";
+        timeCondition = "datetime(timestamp, 'localtime') >= datetime('now', 'localtime', '-1 day')";
         timeFormat = '%Y-%m-%d %H:00:00';
     }
 
     const stmt = this.db.prepare(`
       SELECT
-        strftime('${timeFormat}', timestamp) as hour,
+        strftime('${timeFormat}', timestamp, 'localtime') as hour,
         SUM(input_tokens) as inputTokens,
         SUM(output_tokens) as outputTokens
       FROM request_logs
