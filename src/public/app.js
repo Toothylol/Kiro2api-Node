@@ -2,17 +2,36 @@
 function renderPageShell() {
     const rootEl = document.getElementById("app");
     if (!rootEl) return;
+
+    // 检查所有必需的依赖是否已加载
+    const requiredDeps = ['React', 'ReactDOM', 'PageShell', 'LoginContainer', 'MainPanelShell', 'ToastContainer', 'ModalsRoot'];
+    const missingDeps = requiredDeps.filter(dep => !window[dep]);
+
+    if (missingDeps.length > 0) {
+        console.warn('等待依赖加载:', missingDeps);
+        return;
+    }
+
     const root = ReactDOM.createRoot(rootEl);
     root.render(<PageShell />);
 }
 
-renderPageShell();
+// 等待所有资源加载完成后再渲染
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        // 使用 setTimeout 确保 Babel 编译完成
+        setTimeout(renderPageShell, 100);
+    });
+} else {
+    setTimeout(renderPageShell, 100);
+}
 
 const { useState, useEffect, useRef } = React;
 
 
 
-        let adminKey = localStorage.getItem('kiro_admin_key') || '';
+        window.adminKey = localStorage.getItem('kiro_admin_key') || '';
+        let adminKey = window.adminKey;
         let selectedAccounts = new Set();
         let autoRefreshInterval = null;
         let serverStartTime = null;
@@ -60,9 +79,10 @@ const { useState, useEffect, useRef } = React;
                 uptimeInterval = null;
             }
             adminKey = '';
+            window.adminKey = '';
             localStorage.removeItem('kiro_admin_key');
-            document.getElementById('loginPage').classList.remove('hidden');
-            document.getElementById('mainPanel').classList.add('hidden');
+            // 重新加载页面以重置状态
+            window.location.reload();
         }
 
         let currentActiveTab = 'accounts';
@@ -78,9 +98,11 @@ const { useState, useEffect, useRef } = React;
         let logsToolbarRoot = null;
         let settingsPanelRoot = null;
 
-        function showMainPanel() {
-            document.getElementById('loginPage').classList.add('hidden');
-            document.getElementById('mainPanel').classList.remove('hidden');
+        window.showMainPanel = function showMainPanel() {
+            const mainPanel = document.getElementById('mainPanel');
+            if (mainPanel) {
+                mainPanel.classList.remove('hidden');
+            }
 
             // 渲染 TopNavBar
             const topNavContainer = document.getElementById('top-nav-bar');
@@ -109,10 +131,10 @@ const { useState, useEffect, useRef } = React;
 
             // 渲染 AccountsToolbar
             renderAccountsToolbar();
-            
+
             // 渲染 LogsToolbar
             renderLogsToolbar();
-            
+
             // 渲染 SettingsPanel
             renderSettingsPanel();
 
@@ -1263,29 +1285,11 @@ const { useState, useEffect, useRef } = React;
             }
         }
 
-        (async () => {
-            if (adminKey) {
-                try {
-                    const res = await fetch('/api/status', { headers: { 'Authorization': 'Bearer ' + adminKey } });
-                    if (res.ok) {
-                        showMainPanel();
-                        return;
-                    } else {
-                        adminKey = '';
-                        localStorage.removeItem('kiro_admin_key');
-                    }
-                } catch {}
+        // 自动刷新定时器
+        setInterval(() => {
+            if (adminKey && !document.getElementById('mainPanel')?.classList.contains('hidden')) {
+                loadStatus();
+                loadAccounts();
             }
-            document.getElementById('loginPage').classList.remove('hidden');
-            const loginPageRoot = document.getElementById('loginPage');
-            if (loginPageRoot) {
-                const root = ReactDOM.createRoot(loginPageRoot);
-                root.render(<LoginPage onLoginSuccess={() => {
-                    showMainPanel();
-                    showToast('登录成功', 'success');
-                }} />);
-            }
-        })();
-
-        setInterval(() => { if (adminKey && !document.getElementById('mainPanel').classList.contains('hidden')) { loadStatus(); loadAccounts(); } }, 5000);
+        }, 5000);
     
